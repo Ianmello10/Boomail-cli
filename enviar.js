@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 
-const fs = require("fs");
-const path = require("path");
-const csv = require("csv-parser");
-const nodemailer = require("nodemailer");
-const handlebars = require("handlebars");
+import fs from "fs";
+import path from "path";
+import csv from "csv-parser";
+import nodemailer from "nodemailer";
+import handlebars from "handlebars";
+import config from "./config.json" assert { type: "json" };
 
-const config = require("./config.json");
-
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const templatePath = path.join(__dirname, "template.html");
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
