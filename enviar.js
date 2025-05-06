@@ -113,7 +113,7 @@ const App = () => {
   if (step === "sending") {
     return (
       <Box>
-        <Text>📤 Enviando e-mails... Progresso: {progress.toFixed(2)}%</Text>
+        <Text>Processando envios...</Text>
       </Box>
     );
   }
