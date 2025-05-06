@@ -3,17 +3,18 @@ import fs from "fs";
 export class ArgumentValidator {
   static validate(args) {
     if (args.length === 0) {
-      console.error("❌ Por favor, forneça o caminho para o arquivo CSV como argumento.");
+      console.error("❌ Please provide the path to the CSV file as an argument.");
       process.exit(1);
     }
 
     const filePath = args[0];
     if (!fs.existsSync(filePath)) {
-      console.error(`❌ O arquivo CSV fornecido não foi encontrado: ${filePath}`);
+      console.error(`❌ The provided CSV file was not found: ${filePath}`);
       process.exit(1);
     }
 
     return filePath;
   }
 }
+
 

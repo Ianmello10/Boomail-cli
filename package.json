@@ -4,8 +4,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "esbuild enviar.js --bundle --outfile=dist/enviar.js --platform=node --format=esm --loader:.js=jsx --external:fs --external:events --external:os --external:path --external:stream --external:util --external:dotenv --external:nodemailer --external:csv-parser --external:assert --external:ink --external:react --external:process",
-    "start": "node dist/enviar.js"
+    "build": "esbuild send.js --bundle --outfile=dist/send.js --platform=node --format=esm --loader:.js=jsx --external:fs --external:events --external:os --external:path --external:stream --external:util --external:dotenv --external:nodemailer --external:csv-parser --external:assert --external:ink --external:react --external:process",
+    "start": "node dist/send.js"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +13,7 @@
   "description": "",
   "dependencies": {
     "chalk": "^5.4.1",
+    "cli-spinners": "^3.2.0",
     "commander": "^13.1.0",
     "csv-parser": "^3.2.0",
     "dotenv": "^16.5.0",
