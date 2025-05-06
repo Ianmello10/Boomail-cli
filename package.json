@@ -4,15 +4,26 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "esbuild enviar.js --bundle --outfile=dist/enviar.js --platform=node --format=esm --loader:.js=jsx --external:fs --external:events --external:os --external:path --external:stream --external:util --external:dotenv --external:nodemailer --external:csv-parser --external:assert --external:ink --external:react --external:process",
+    "start": "node dist/enviar.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
     "csv-parser": "^3.2.0",
+    "dotenv": "^16.5.0",
+    "esbuild": "^0.25.4",
     "handlebars": "^4.7.8",
-    "nodemailer": "^6.10.1"
+    "ink": "^5.2.1",
+    "inquirer": "^12.6.0",
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^6.10.1",
+    "open": "^10.1.2",
+    "react": "^18.3.1",
+    "react-devtools-core": "^4.28.5"
   }
 }

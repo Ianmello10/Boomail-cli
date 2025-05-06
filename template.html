@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Responsive Email</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fa;
+      font-family: Arial, sans-serif;
+    }
+    .email-container {
+      max-width: 600px;
+      margin: auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    h1 {
+      color: #333;
+    }
+    p {
+      color: #555;
+    }
+    .button {
+      display: inline-block;
+      padding: 12px 24px;
+      margin-top: 20px;
+      background-color: #4CAF50;
+      color: #ffffff;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    @media only screen and (max-width: 600px) {
+      .email-container {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <h1>Olá, Lucas!</h1>
+    <p>Este é um exemplo de e-mail responsivo criado com HTML puro. Você pode adaptá-lo para usar com React Email ou outro serviço.</p>
+    <a href="https://seusite.com" class="button">Acessar agora</a>
+  </div>
+</body>
+</html>
