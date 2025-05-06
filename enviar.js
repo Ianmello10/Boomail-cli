@@ -1,10 +1,8 @@
 #!/usr/bin/env node
 
-// Adicionei um comentário para lembrar que o arquivo precisa ser transpilado antes de ser executado
-// Certifique-se de rodar `npm run build` antes de `npm start`
-
 import React, { useState, useEffect } from "react";
-import { render, Box, Text } from "ink";
+import { render, Box, Text, useInput } from "ink";
+import open from "open";
 import { EmailSender } from "./services/EmailSender.js";
 import { CSVReader } from "./services/CSVReader.js";
 import { TemplateRenderer } from "./services/TemplateRenderer.js";
@@ -17,31 +15,61 @@ const App = () => {
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
 
+  // Função para abrir o template HTML
+  const previewTemplate = async () => {
+    try {
+      await open("./template.html");
+    } catch (err) {
+      console.error("Erro ao abrir o template:", err.message);
+    }
+  };
+
+  // Captura de teclas no passo de confirmação
+  useInput((input) => {
+    if (step === "confirm") {
+      if (input === "v" || input === "V") {
+        previewTemplate();
+      } else if (input === "y" || input === "Y") {
+        setStep("processing");
+      } else if (input === "n" || input === "N") {
+        setCsvPath(null);
+        setStep("input");
+      }
+    }
+  });
+
+  // Processamento e envio após confirmação
   useEffect(() => {
     const processCSV = async () => {
       try {
         const csvReader = new CSVReader();
-        const contatos = await csvReader.read(csvPath);
-        setContatos(contatos);
+        const contacts = await csvReader.read(csvPath);
+        setContatos(contacts);
         setStep("sending");
 
         const templateRenderer = new TemplateRenderer("./template.html");
         const emailSender = new EmailSender();
 
-        for (const [i, contato] of contatos.entries()) {
+        for (const [i, contato] of contacts.entries()) {
           try {
             const html = templateRenderer.render(contato);
-            await emailSender.send(contato.email, html, i + 1, contatos.length);
-            setProgress(((i + 1) / contatos.length) * 100);
+            await emailSender.send(contato.email, html, i + 1, contacts.length);
+            setProgress(((i + 1) / contacts.length) * 100);
           } catch (err) {
-            console.error(`❌ Erro ao enviar para ${contato.email}: ${err.message}`);
+            console.error(
+              `❌ Erro ao enviar para ${contato.email}: ${err.message}`
+            );
           }
         }
 
         setStep("done");
       } catch (err) {
-        setError(err.message);
-        setStep("error");
+        if (err.message === "No recipients defined") {
+          console.error("Não ha mais destinatários definidos.");
+        } else {
+          setError(err.message);
+          setStep("error");
+        }
       }
     };
 
@@ -50,21 +78,34 @@ const App = () => {
     }
   }, [step, csvPath]);
 
+  // Renderização de acordo com o passo
   if (step === "input") {
     return (
-      <CSVInput
-        onSubmit={(path) => {
-          setCsvPath(path);
-          setStep("processing");
-        }}
-      />
+      <Box>
+        <CSVInput
+          onSubmit={(path) => {
+            setCsvPath(path);
+            setStep("confirm");
+          }}
+        />
+      </Box>
+    );
+  }
+
+  if (step === "confirm") {
+    return (
+      <Box flexDirection="column">
+        <Text>📂 Arquivo carregado: {csvPath}</Text>
+        <Text>👀 Deseja visualizar o template antes de enviar?</Text>
+        <Text>[V] Visualizar [Y] Enviar [N] Cancelar</Text>
+      </Box>
     );
   }
 
   if (step === "processing") {
     return (
       <Box>
-        <Text>📂 Processando o arquivo CSV...</Text>
+        <Text>📂 Lendo CSV e preparando envios...</Text>
       </Box>
     );
   }

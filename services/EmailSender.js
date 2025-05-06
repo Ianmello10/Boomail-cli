@@ -23,6 +23,7 @@ export class EmailSender {
         html,
       };
 
+      console.log(`📤 Enviando e-mail para ${to} (${currentIndex}/${total})...`);
       await this.transporter.sendMail(mailOptions);
       console.log(`✅ [${currentIndex}/${total}] Email enviado para ${to}`);
 

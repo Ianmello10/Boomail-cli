@@ -1195,13 +1195,13 @@ var require_ast = __commonJS({
         helperExpression: function helperExpression(node) {
           return node.type === "SubExpression" || (node.type === "MustacheStatement" || node.type === "BlockStatement") && !!(node.params && node.params.length || node.hash);
         },
-        scopedId: function scopedId(path2) {
-          return /^\.|this\b/.test(path2.original);
+        scopedId: function scopedId(path3) {
+          return /^\.|this\b/.test(path3.original);
         },
         // an ID is simple if it only has one part, and that part is not
         // `..` or `this`.
-        simpleId: function simpleId(path2) {
-          return path2.parts.length === 1 && !AST.helpers.scopedId(path2) && !path2.depth;
+        simpleId: function simpleId(path3) {
+          return path3.parts.length === 1 && !AST.helpers.scopedId(path3) && !path3.depth;
         }
       }
     };
@@ -2212,11 +2212,11 @@ var require_helpers2 = __commonJS({
     }
     var _exception = require_exception();
     var _exception2 = _interopRequireDefault(_exception);
-    function validateClose(open, close) {
+    function validateClose(open2, close) {
       close = close.path ? close.path.original : close;
-      if (open.path.original !== close) {
-        var errorNode = { loc: open.path.loc };
-        throw new _exception2["default"](open.path.original + " doesn't match " + close, errorNode);
+      if (open2.path.original !== close) {
+        var errorNode = { loc: open2.path.loc };
+        throw new _exception2["default"](open2.path.original + " doesn't match " + close, errorNode);
       }
     }
     function SourceLocation(source, locInfo) {
@@ -2237,9 +2237,9 @@ var require_helpers2 = __commonJS({
         return token;
       }
     }
-    function stripFlags(open, close) {
+    function stripFlags(open2, close) {
       return {
-        open: open.charAt(2) === "~",
+        open: open2.charAt(2) === "~",
         close: close.charAt(close.length - 3) === "~"
       };
     }
@@ -2271,12 +2271,12 @@ var require_helpers2 = __commonJS({
         loc
       };
     }
-    function prepareMustache(path2, params, hash, open, strip, locInfo) {
-      var escapeFlag = open.charAt(3) || open.charAt(2), escaped = escapeFlag !== "{" && escapeFlag !== "&";
-      var decorator = /\*/.test(open);
+    function prepareMustache(path3, params, hash, open2, strip, locInfo) {
+      var escapeFlag = open2.charAt(3) || open2.charAt(2), escaped = escapeFlag !== "{" && escapeFlag !== "&";
+      var decorator = /\*/.test(open2);
       return {
         type: decorator ? "Decorator" : "MustacheStatement",
-        path: path2,
+        path: path3,
         params,
         hash,
         escaped,
@@ -2364,15 +2364,15 @@ var require_helpers2 = __commonJS({
         loc
       };
     }
-    function preparePartialBlock(open, program, close, locInfo) {
-      validateClose(open, close);
+    function preparePartialBlock(open2, program, close, locInfo) {
+      validateClose(open2, close);
       return {
         type: "PartialBlockStatement",
-        name: open.path,
-        params: open.params,
-        hash: open.hash,
+        name: open2.path,
+        params: open2.params,
+        hash: open2.hash,
         program,
-        openStrip: open.strip,
+        openStrip: open2.strip,
         closeStrip: close && close.strip,
         loc: this.locInfo(locInfo)
       };
@@ -2546,9 +2546,9 @@ var require_compiler = __commonJS({
       },
       DecoratorBlock: function DecoratorBlock(decorator) {
         var program = decorator.program && this.compileProgram(decorator.program);
-        var params = this.setupFullMustacheParams(decorator, program, void 0), path2 = decorator.path;
+        var params = this.setupFullMustacheParams(decorator, program, void 0), path3 = decorator.path;
         this.useDecorators = true;
-        this.opcode("registerDecorator", params.length, path2.original);
+        this.opcode("registerDecorator", params.length, path3.original);
       },
       PartialStatement: function PartialStatement(partial) {
         this.usePartial = true;
@@ -2612,46 +2612,46 @@ var require_compiler = __commonJS({
         }
       },
       ambiguousSexpr: function ambiguousSexpr(sexpr, program, inverse) {
-        var path2 = sexpr.path, name = path2.parts[0], isBlock = program != null || inverse != null;
-        this.opcode("getContext", path2.depth);
+        var path3 = sexpr.path, name = path3.parts[0], isBlock = program != null || inverse != null;
+        this.opcode("getContext", path3.depth);
         this.opcode("pushProgram", program);
         this.opcode("pushProgram", inverse);
-        path2.strict = true;
-        this.accept(path2);
+        path3.strict = true;
+        this.accept(path3);
         this.opcode("invokeAmbiguous", name, isBlock);
       },
       simpleSexpr: function simpleSexpr(sexpr) {
-        var path2 = sexpr.path;
-        path2.strict = true;
-        this.accept(path2);
+        var path3 = sexpr.path;
+        path3.strict = true;
+        this.accept(path3);
         this.opcode("resolvePossibleLambda");
       },
       helperSexpr: function helperSexpr(sexpr, program, inverse) {
-        var params = this.setupFullMustacheParams(sexpr, program, inverse), path2 = sexpr.path, name = path2.parts[0];
+        var params = this.setupFullMustacheParams(sexpr, program, inverse), path3 = sexpr.path, name = path3.parts[0];
         if (this.options.knownHelpers[name]) {
           this.opcode("invokeKnownHelper", params.length, name);
         } else if (this.options.knownHelpersOnly) {
           throw new _exception2["default"]("You specified knownHelpersOnly, but used the unknown helper " + name, sexpr);
         } else {
-          path2.strict = true;
-          path2.falsy = true;
-          this.accept(path2);
-          this.opcode("invokeHelper", params.length, path2.original, _ast2["default"].helpers.simpleId(path2));
+          path3.strict = true;
+          path3.falsy = true;
+          this.accept(path3);
+          this.opcode("invokeHelper", params.length, path3.original, _ast2["default"].helpers.simpleId(path3));
         }
       },
-      PathExpression: function PathExpression(path2) {
-        this.addDepth(path2.depth);
-        this.opcode("getContext", path2.depth);
-        var name = path2.parts[0], scoped = _ast2["default"].helpers.scopedId(path2), blockParamId = !path2.depth && !scoped && this.blockParamIndex(name);
+      PathExpression: function PathExpression(path3) {
+        this.addDepth(path3.depth);
+        this.opcode("getContext", path3.depth);
+        var name = path3.parts[0], scoped = _ast2["default"].helpers.scopedId(path3), blockParamId = !path3.depth && !scoped && this.blockParamIndex(name);
         if (blockParamId) {
-          this.opcode("lookupBlockParam", blockParamId, path2.parts);
+          this.opcode("lookupBlockParam", blockParamId, path3.parts);
         } else if (!name) {
           this.opcode("pushContext");
-        } else if (path2.data) {
+        } else if (path3.data) {
           this.options.data = true;
-          this.opcode("lookupData", path2.depth, path2.parts, path2.strict);
+          this.opcode("lookupData", path3.depth, path3.parts, path3.strict);
         } else {
-          this.opcode("lookupOnContext", path2.parts, path2.falsy, path2.strict, scoped);
+          this.opcode("lookupOnContext", path3.parts, path3.falsy, path3.strict, scoped);
         }
       },
       StringLiteral: function StringLiteral(string) {
@@ -3001,16 +3001,16 @@ var require_util = __commonJS({
     }
     exports.urlGenerate = urlGenerate;
     function normalize(aPath) {
-      var path2 = aPath;
+      var path3 = aPath;
       var url = urlParse(aPath);
       if (url) {
         if (!url.path) {
           return aPath;
         }
-        path2 = url.path;
+        path3 = url.path;
       }
-      var isAbsolute = exports.isAbsolute(path2);
-      var parts = path2.split(/\/+/);
+      var isAbsolute = exports.isAbsolute(path3);
+      var parts = path3.split(/\/+/);
       for (var part, up = 0, i = parts.length - 1; i >= 0; i--) {
         part = parts[i];
         if (part === ".") {
@@ -3027,15 +3027,15 @@ var require_util = __commonJS({
           }
         }
       }
-      path2 = parts.join("/");
-      if (path2 === "") {
-        path2 = isAbsolute ? "/" : ".";
+      path3 = parts.join("/");
+      if (path3 === "") {
+        path3 = isAbsolute ? "/" : ".";
       }
       if (url) {
-        url.path = path2;
+        url.path = path3;
         return urlGenerate(url);
       }
-      return path2;
+      return path3;
     }
     exports.normalize = normalize;
     function join(aRoot, aPath) {
@@ -3254,7 +3254,7 @@ var require_util = __commonJS({
 // node_modules/source-map/lib/array-set.js
 var require_array_set = __commonJS({
   "node_modules/source-map/lib/array-set.js"(exports) {
-    var util = require_util();
+    var util2 = require_util();
     var has = Object.prototype.hasOwnProperty;
     var hasNativeMap = typeof Map !== "undefined";
     function ArraySet() {
@@ -3272,7 +3272,7 @@ var require_array_set = __commonJS({
       return hasNativeMap ? this._set.size : Object.getOwnPropertyNames(this._set).length;
     };
     ArraySet.prototype.add = function ArraySet_add(aStr, aAllowDuplicates) {
-      var sStr = hasNativeMap ? aStr : util.toSetString(aStr);
+      var sStr = hasNativeMap ? aStr : util2.toSetString(aStr);
       var isDuplicate = hasNativeMap ? this.has(aStr) : has.call(this._set, sStr);
       var idx = this._array.length;
       if (!isDuplicate || aAllowDuplicates) {
@@ -3290,7 +3290,7 @@ var require_array_set = __commonJS({
       if (hasNativeMap) {
         return this._set.has(aStr);
       } else {
-        var sStr = util.toSetString(aStr);
+        var sStr = util2.toSetString(aStr);
         return has.call(this._set, sStr);
       }
     };
@@ -3301,7 +3301,7 @@ var require_array_set = __commonJS({
           return idx;
         }
       } else {
-        var sStr = util.toSetString(aStr);
+        var sStr = util2.toSetString(aStr);
         if (has.call(this._set, sStr)) {
           return this._set[sStr];
         }
@@ -3324,13 +3324,13 @@ var require_array_set = __commonJS({
 // node_modules/source-map/lib/mapping-list.js
 var require_mapping_list = __commonJS({
   "node_modules/source-map/lib/mapping-list.js"(exports) {
-    var util = require_util();
+    var util2 = require_util();
     function generatedPositionAfter(mappingA, mappingB) {
       var lineA = mappingA.generatedLine;
       var lineB = mappingB.generatedLine;
       var columnA = mappingA.generatedColumn;
       var columnB = mappingB.generatedColumn;
-      return lineB > lineA || lineB == lineA && columnB >= columnA || util.compareByGeneratedPositionsInflated(mappingA, mappingB) <= 0;
+      return lineB > lineA || lineB == lineA && columnB >= columnA || util2.compareByGeneratedPositionsInflated(mappingA, mappingB) <= 0;
     }
     function MappingList() {
       this._array = [];
@@ -3351,7 +3351,7 @@ var require_mapping_list = __commonJS({
     };
     MappingList.prototype.toArray = function MappingList_toArray() {
       if (!this._sorted) {
-        this._array.sort(util.compareByGeneratedPositionsInflated);
+        this._array.sort(util2.compareByGeneratedPositionsInflated);
         this._sorted = true;
       }
       return this._array;
@@ -3364,16 +3364,16 @@ var require_mapping_list = __commonJS({
 var require_source_map_generator = __commonJS({
   "node_modules/source-map/lib/source-map-generator.js"(exports) {
     var base64VLQ = require_base64_vlq();
-    var util = require_util();
+    var util2 = require_util();
     var ArraySet = require_array_set().ArraySet;
     var MappingList = require_mapping_list().MappingList;
     function SourceMapGenerator(aArgs) {
       if (!aArgs) {
         aArgs = {};
       }
-      this._file = util.getArg(aArgs, "file", null);
-      this._sourceRoot = util.getArg(aArgs, "sourceRoot", null);
-      this._skipValidation = util.getArg(aArgs, "skipValidation", false);
+      this._file = util2.getArg(aArgs, "file", null);
+      this._sourceRoot = util2.getArg(aArgs, "sourceRoot", null);
+      this._skipValidation = util2.getArg(aArgs, "skipValidation", false);
       this._sources = new ArraySet();
       this._names = new ArraySet();
       this._mappings = new MappingList();
@@ -3396,7 +3396,7 @@ var require_source_map_generator = __commonJS({
         if (mapping.source != null) {
           newMapping.source = mapping.source;
           if (sourceRoot != null) {
-            newMapping.source = util.relative(sourceRoot, newMapping.source);
+            newMapping.source = util2.relative(sourceRoot, newMapping.source);
           }
           newMapping.original = {
             line: mapping.originalLine,
@@ -3411,7 +3411,7 @@ var require_source_map_generator = __commonJS({
       aSourceMapConsumer.sources.forEach(function(sourceFile) {
         var sourceRelative = sourceFile;
         if (sourceRoot !== null) {
-          sourceRelative = util.relative(sourceRoot, sourceFile);
+          sourceRelative = util2.relative(sourceRoot, sourceFile);
         }
         if (!generator._sources.has(sourceRelative)) {
           generator._sources.add(sourceRelative);
@@ -3424,10 +3424,10 @@ var require_source_map_generator = __commonJS({
       return generator;
     };
     SourceMapGenerator.prototype.addMapping = function SourceMapGenerator_addMapping(aArgs) {
-      var generated = util.getArg(aArgs, "generated");
-      var original = util.getArg(aArgs, "original", null);
-      var source = util.getArg(aArgs, "source", null);
-      var name = util.getArg(aArgs, "name", null);
+      var generated = util2.getArg(aArgs, "generated");
+      var original = util2.getArg(aArgs, "original", null);
+      var source = util2.getArg(aArgs, "source", null);
+      var name = util2.getArg(aArgs, "name", null);
       if (!this._skipValidation) {
         this._validateMapping(generated, original, source, name);
       }
@@ -3455,15 +3455,15 @@ var require_source_map_generator = __commonJS({
     SourceMapGenerator.prototype.setSourceContent = function SourceMapGenerator_setSourceContent(aSourceFile, aSourceContent) {
       var source = aSourceFile;
       if (this._sourceRoot != null) {
-        source = util.relative(this._sourceRoot, source);
+        source = util2.relative(this._sourceRoot, source);
       }
       if (aSourceContent != null) {
         if (!this._sourcesContents) {
           this._sourcesContents = /* @__PURE__ */ Object.create(null);
         }
-        this._sourcesContents[util.toSetString(source)] = aSourceContent;
+        this._sourcesContents[util2.toSetString(source)] = aSourceContent;
       } else if (this._sourcesContents) {
-        delete this._sourcesContents[util.toSetString(source)];
+        delete this._sourcesContents[util2.toSetString(source)];
         if (Object.keys(this._sourcesContents).length === 0) {
           this._sourcesContents = null;
         }
@@ -3481,7 +3481,7 @@ var require_source_map_generator = __commonJS({
       }
       var sourceRoot = this._sourceRoot;
       if (sourceRoot != null) {
-        sourceFile = util.relative(sourceRoot, sourceFile);
+        sourceFile = util2.relative(sourceRoot, sourceFile);
       }
       var newSources = new ArraySet();
       var newNames = new ArraySet();
@@ -3494,10 +3494,10 @@ var require_source_map_generator = __commonJS({
           if (original.source != null) {
             mapping.source = original.source;
             if (aSourceMapPath != null) {
-              mapping.source = util.join(aSourceMapPath, mapping.source);
+              mapping.source = util2.join(aSourceMapPath, mapping.source);
             }
             if (sourceRoot != null) {
-              mapping.source = util.relative(sourceRoot, mapping.source);
+              mapping.source = util2.relative(sourceRoot, mapping.source);
             }
             mapping.originalLine = original.line;
             mapping.originalColumn = original.column;
@@ -3521,10 +3521,10 @@ var require_source_map_generator = __commonJS({
         var content = aSourceMapConsumer.sourceContentFor(sourceFile2);
         if (content != null) {
           if (aSourceMapPath != null) {
-            sourceFile2 = util.join(aSourceMapPath, sourceFile2);
+            sourceFile2 = util2.join(aSourceMapPath, sourceFile2);
           }
           if (sourceRoot != null) {
-            sourceFile2 = util.relative(sourceRoot, sourceFile2);
+            sourceFile2 = util2.relative(sourceRoot, sourceFile2);
           }
           this.setSourceContent(sourceFile2, content);
         }
@@ -3573,7 +3573,7 @@ var require_source_map_generator = __commonJS({
           }
         } else {
           if (i > 0) {
-            if (!util.compareByGeneratedPositionsInflated(mapping, mappings[i - 1])) {
+            if (!util2.compareByGeneratedPositionsInflated(mapping, mappings[i - 1])) {
               continue;
             }
             next += ",";
@@ -3605,9 +3605,9 @@ var require_source_map_generator = __commonJS({
           return null;
         }
         if (aSourceRoot != null) {
-          source = util.relative(aSourceRoot, source);
+          source = util2.relative(aSourceRoot, source);
         }
-        var key = util.toSetString(source);
+        var key = util2.toSetString(source);
         return Object.prototype.hasOwnProperty.call(this._sourcesContents, key) ? this._sourcesContents[key] : null;
       }, this);
     };
@@ -3730,7 +3730,7 @@ var require_quick_sort = __commonJS({
 // node_modules/source-map/lib/source-map-consumer.js
 var require_source_map_consumer = __commonJS({
   "node_modules/source-map/lib/source-map-consumer.js"(exports) {
-    var util = require_util();
+    var util2 = require_util();
     var binarySearch = require_binary_search();
     var ArraySet = require_array_set().ArraySet;
     var base64VLQ = require_base64_vlq();
@@ -3738,7 +3738,7 @@ var require_source_map_consumer = __commonJS({
     function SourceMapConsumer(aSourceMap, aSourceMapURL) {
       var sourceMap = aSourceMap;
       if (typeof aSourceMap === "string") {
-        sourceMap = util.parseSourceMapInput(aSourceMap);
+        sourceMap = util2.parseSourceMapInput(aSourceMap);
       }
       return sourceMap.sections != null ? new IndexedSourceMapConsumer(sourceMap, aSourceMapURL) : new BasicSourceMapConsumer(sourceMap, aSourceMapURL);
     }
@@ -3796,7 +3796,7 @@ var require_source_map_consumer = __commonJS({
       var sourceRoot = this.sourceRoot;
       mappings.map(function(mapping) {
         var source = mapping.source === null ? null : this._sources.at(mapping.source);
-        source = util.computeSourceURL(sourceRoot, source, this._sourceMapURL);
+        source = util2.computeSourceURL(sourceRoot, source, this._sourceMapURL);
         return {
           source,
           generatedLine: mapping.generatedLine,
@@ -3808,11 +3808,11 @@ var require_source_map_consumer = __commonJS({
       }, this).forEach(aCallback, context);
     };
     SourceMapConsumer.prototype.allGeneratedPositionsFor = function SourceMapConsumer_allGeneratedPositionsFor(aArgs) {
-      var line = util.getArg(aArgs, "line");
+      var line = util2.getArg(aArgs, "line");
       var needle = {
-        source: util.getArg(aArgs, "source"),
+        source: util2.getArg(aArgs, "source"),
         originalLine: line,
-        originalColumn: util.getArg(aArgs, "column", 0)
+        originalColumn: util2.getArg(aArgs, "column", 0)
       };
       needle.source = this._findSourceIndex(needle.source);
       if (needle.source < 0) {
@@ -3824,7 +3824,7 @@ var require_source_map_consumer = __commonJS({
         this._originalMappings,
         "originalLine",
         "originalColumn",
-        util.compareByOriginalPositions,
+        util2.compareByOriginalPositions,
         binarySearch.LEAST_UPPER_BOUND
       );
       if (index >= 0) {
@@ -3833,9 +3833,9 @@ var require_source_map_consumer = __commonJS({
           var originalLine = mapping.originalLine;
           while (mapping && mapping.originalLine === originalLine) {
             mappings.push({
-              line: util.getArg(mapping, "generatedLine", null),
-              column: util.getArg(mapping, "generatedColumn", null),
-              lastColumn: util.getArg(mapping, "lastGeneratedColumn", null)
+              line: util2.getArg(mapping, "generatedLine", null),
+              column: util2.getArg(mapping, "generatedColumn", null),
+              lastColumn: util2.getArg(mapping, "lastGeneratedColumn", null)
             });
             mapping = this._originalMappings[++index];
           }
@@ -3843,9 +3843,9 @@ var require_source_map_consumer = __commonJS({
           var originalColumn = mapping.originalColumn;
           while (mapping && mapping.originalLine === line && mapping.originalColumn == originalColumn) {
             mappings.push({
-              line: util.getArg(mapping, "generatedLine", null),
-              column: util.getArg(mapping, "generatedColumn", null),
-              lastColumn: util.getArg(mapping, "lastGeneratedColumn", null)
+              line: util2.getArg(mapping, "generatedLine", null),
+              column: util2.getArg(mapping, "generatedColumn", null),
+              lastColumn: util2.getArg(mapping, "lastGeneratedColumn", null)
             });
             mapping = this._originalMappings[++index];
           }
@@ -3857,28 +3857,28 @@ var require_source_map_consumer = __commonJS({
     function BasicSourceMapConsumer(aSourceMap, aSourceMapURL) {
       var sourceMap = aSourceMap;
       if (typeof aSourceMap === "string") {
-        sourceMap = util.parseSourceMapInput(aSourceMap);
+        sourceMap = util2.parseSourceMapInput(aSourceMap);
       }
-      var version = util.getArg(sourceMap, "version");
-      var sources = util.getArg(sourceMap, "sources");
-      var names = util.getArg(sourceMap, "names", []);
-      var sourceRoot = util.getArg(sourceMap, "sourceRoot", null);
-      var sourcesContent = util.getArg(sourceMap, "sourcesContent", null);
-      var mappings = util.getArg(sourceMap, "mappings");
-      var file = util.getArg(sourceMap, "file", null);
+      var version = util2.getArg(sourceMap, "version");
+      var sources = util2.getArg(sourceMap, "sources");
+      var names = util2.getArg(sourceMap, "names", []);
+      var sourceRoot = util2.getArg(sourceMap, "sourceRoot", null);
+      var sourcesContent = util2.getArg(sourceMap, "sourcesContent", null);
+      var mappings = util2.getArg(sourceMap, "mappings");
+      var file = util2.getArg(sourceMap, "file", null);
       if (version != this._version) {
         throw new Error("Unsupported version: " + version);
       }
       if (sourceRoot) {
-        sourceRoot = util.normalize(sourceRoot);
+        sourceRoot = util2.normalize(sourceRoot);
       }
-      sources = sources.map(String).map(util.normalize).map(function(source) {
-        return sourceRoot && util.isAbsolute(sourceRoot) && util.isAbsolute(source) ? util.relative(sourceRoot, source) : source;
+      sources = sources.map(String).map(util2.normalize).map(function(source) {
+        return sourceRoot && util2.isAbsolute(sourceRoot) && util2.isAbsolute(source) ? util2.relative(sourceRoot, source) : source;
       });
       this._names = ArraySet.fromArray(names.map(String), true);
       this._sources = ArraySet.fromArray(sources, true);
       this._absoluteSources = this._sources.toArray().map(function(s) {
-        return util.computeSourceURL(sourceRoot, s, aSourceMapURL);
+        return util2.computeSourceURL(sourceRoot, s, aSourceMapURL);
       });
       this.sourceRoot = sourceRoot;
       this.sourcesContent = sourcesContent;
@@ -3891,7 +3891,7 @@ var require_source_map_consumer = __commonJS({
     BasicSourceMapConsumer.prototype._findSourceIndex = function(aSource) {
       var relativeSource = aSource;
       if (this.sourceRoot != null) {
-        relativeSource = util.relative(this.sourceRoot, relativeSource);
+        relativeSource = util2.relative(this.sourceRoot, relativeSource);
       }
       if (this._sources.has(relativeSource)) {
         return this._sources.indexOf(relativeSource);
@@ -3916,7 +3916,7 @@ var require_source_map_consumer = __commonJS({
       smc.file = aSourceMap._file;
       smc._sourceMapURL = aSourceMapURL;
       smc._absoluteSources = smc._sources.toArray().map(function(s) {
-        return util.computeSourceURL(smc.sourceRoot, s, aSourceMapURL);
+        return util2.computeSourceURL(smc.sourceRoot, s, aSourceMapURL);
       });
       var generatedMappings = aSourceMap._mappings.toArray().slice();
       var destGeneratedMappings = smc.__generatedMappings = [];
@@ -3937,7 +3937,7 @@ var require_source_map_consumer = __commonJS({
         }
         destGeneratedMappings.push(destMapping);
       }
-      quickSort(smc.__originalMappings, util.compareByOriginalPositions);
+      quickSort(smc.__originalMappings, util2.compareByOriginalPositions);
       return smc;
     };
     BasicSourceMapConsumer.prototype._version = 3;
@@ -4024,9 +4024,9 @@ var require_source_map_consumer = __commonJS({
           }
         }
       }
-      quickSort(generatedMappings, util.compareByGeneratedPositionsDeflated);
+      quickSort(generatedMappings, util2.compareByGeneratedPositionsDeflated);
       this.__generatedMappings = generatedMappings;
-      quickSort(originalMappings, util.compareByOriginalPositions);
+      quickSort(originalMappings, util2.compareByOriginalPositions);
       this.__originalMappings = originalMappings;
     };
     BasicSourceMapConsumer.prototype._findMapping = function SourceMapConsumer_findMapping(aNeedle, aMappings, aLineName, aColumnName, aComparator, aBias) {
@@ -4053,33 +4053,33 @@ var require_source_map_consumer = __commonJS({
     };
     BasicSourceMapConsumer.prototype.originalPositionFor = function SourceMapConsumer_originalPositionFor(aArgs) {
       var needle = {
-        generatedLine: util.getArg(aArgs, "line"),
-        generatedColumn: util.getArg(aArgs, "column")
+        generatedLine: util2.getArg(aArgs, "line"),
+        generatedColumn: util2.getArg(aArgs, "column")
       };
       var index = this._findMapping(
         needle,
         this._generatedMappings,
         "generatedLine",
         "generatedColumn",
-        util.compareByGeneratedPositionsDeflated,
-        util.getArg(aArgs, "bias", SourceMapConsumer.GREATEST_LOWER_BOUND)
+        util2.compareByGeneratedPositionsDeflated,
+        util2.getArg(aArgs, "bias", SourceMapConsumer.GREATEST_LOWER_BOUND)
       );
       if (index >= 0) {
         var mapping = this._generatedMappings[index];
         if (mapping.generatedLine === needle.generatedLine) {
-          var source = util.getArg(mapping, "source", null);
+          var source = util2.getArg(mapping, "source", null);
           if (source !== null) {
             source = this._sources.at(source);
-            source = util.computeSourceURL(this.sourceRoot, source, this._sourceMapURL);
+            source = util2.computeSourceURL(this.sourceRoot, source, this._sourceMapURL);
           }
-          var name = util.getArg(mapping, "name", null);
+          var name = util2.getArg(mapping, "name", null);
           if (name !== null) {
             name = this._names.at(name);
           }
           return {
             source,
-            line: util.getArg(mapping, "originalLine", null),
-            column: util.getArg(mapping, "originalColumn", null),
+            line: util2.getArg(mapping, "originalLine", null),
+            column: util2.getArg(mapping, "originalColumn", null),
             name
           };
         }
@@ -4109,10 +4109,10 @@ var require_source_map_consumer = __commonJS({
       }
       var relativeSource = aSource;
       if (this.sourceRoot != null) {
-        relativeSource = util.relative(this.sourceRoot, relativeSource);
+        relativeSource = util2.relative(this.sourceRoot, relativeSource);
       }
       var url;
-      if (this.sourceRoot != null && (url = util.urlParse(this.sourceRoot))) {
+      if (this.sourceRoot != null && (url = util2.urlParse(this.sourceRoot))) {
         var fileUriAbsPath = relativeSource.replace(/^file:\/\//, "");
         if (url.scheme == "file" && this._sources.has(fileUriAbsPath)) {
           return this.sourcesContent[this._sources.indexOf(fileUriAbsPath)];
@@ -4128,7 +4128,7 @@ var require_source_map_consumer = __commonJS({
       }
     };
     BasicSourceMapConsumer.prototype.generatedPositionFor = function SourceMapConsumer_generatedPositionFor(aArgs) {
-      var source = util.getArg(aArgs, "source");
+      var source = util2.getArg(aArgs, "source");
       source = this._findSourceIndex(source);
       if (source < 0) {
         return {
@@ -4139,24 +4139,24 @@ var require_source_map_consumer = __commonJS({
       }
       var needle = {
         source,
-        originalLine: util.getArg(aArgs, "line"),
-        originalColumn: util.getArg(aArgs, "column")
+        originalLine: util2.getArg(aArgs, "line"),
+        originalColumn: util2.getArg(aArgs, "column")
       };
       var index = this._findMapping(
         needle,
         this._originalMappings,
         "originalLine",
         "originalColumn",
-        util.compareByOriginalPositions,
-        util.getArg(aArgs, "bias", SourceMapConsumer.GREATEST_LOWER_BOUND)
+        util2.compareByOriginalPositions,
+        util2.getArg(aArgs, "bias", SourceMapConsumer.GREATEST_LOWER_BOUND)
       );
       if (index >= 0) {
         var mapping = this._originalMappings[index];
         if (mapping.source === needle.source) {
           return {
-            line: util.getArg(mapping, "generatedLine", null),
-            column: util.getArg(mapping, "generatedColumn", null),
-            lastColumn: util.getArg(mapping, "lastGeneratedColumn", null)
+            line: util2.getArg(mapping, "generatedLine", null),
+            column: util2.getArg(mapping, "generatedColumn", null),
+            lastColumn: util2.getArg(mapping, "lastGeneratedColumn", null)
           };
         }
       }
@@ -4170,10 +4170,10 @@ var require_source_map_consumer = __commonJS({
     function IndexedSourceMapConsumer(aSourceMap, aSourceMapURL) {
       var sourceMap = aSourceMap;
       if (typeof aSourceMap === "string") {
-        sourceMap = util.parseSourceMapInput(aSourceMap);
+        sourceMap = util2.parseSourceMapInput(aSourceMap);
       }
-      var version = util.getArg(sourceMap, "version");
-      var sections = util.getArg(sourceMap, "sections");
+      var version = util2.getArg(sourceMap, "version");
+      var sections = util2.getArg(sourceMap, "sections");
       if (version != this._version) {
         throw new Error("Unsupported version: " + version);
       }
@@ -4187,9 +4187,9 @@ var require_source_map_consumer = __commonJS({
         if (s.url) {
           throw new Error("Support for url field in sections not implemented.");
         }
-        var offset = util.getArg(s, "offset");
-        var offsetLine = util.getArg(offset, "line");
-        var offsetColumn = util.getArg(offset, "column");
+        var offset = util2.getArg(s, "offset");
+        var offsetLine = util2.getArg(offset, "line");
+        var offsetColumn = util2.getArg(offset, "column");
         if (offsetLine < lastOffset.line || offsetLine === lastOffset.line && offsetColumn < lastOffset.column) {
           throw new Error("Section offsets must be ordered and non-overlapping.");
         }
@@ -4201,7 +4201,7 @@ var require_source_map_consumer = __commonJS({
             generatedLine: offsetLine + 1,
             generatedColumn: offsetColumn + 1
           },
-          consumer: new SourceMapConsumer(util.getArg(s, "map"), aSourceMapURL)
+          consumer: new SourceMapConsumer(util2.getArg(s, "map"), aSourceMapURL)
         };
       });
     }
@@ -4221,8 +4221,8 @@ var require_source_map_consumer = __commonJS({
     });
     IndexedSourceMapConsumer.prototype.originalPositionFor = function IndexedSourceMapConsumer_originalPositionFor(aArgs) {
       var needle = {
-        generatedLine: util.getArg(aArgs, "line"),
-        generatedColumn: util.getArg(aArgs, "column")
+        generatedLine: util2.getArg(aArgs, "line"),
+        generatedColumn: util2.getArg(aArgs, "column")
       };
       var sectionIndex = binarySearch.search(
         needle,
@@ -4272,7 +4272,7 @@ var require_source_map_consumer = __commonJS({
     IndexedSourceMapConsumer.prototype.generatedPositionFor = function IndexedSourceMapConsumer_generatedPositionFor(aArgs) {
       for (var i = 0; i < this._sections.length; i++) {
         var section = this._sections[i];
-        if (section.consumer._findSourceIndex(util.getArg(aArgs, "source")) === -1) {
+        if (section.consumer._findSourceIndex(util2.getArg(aArgs, "source")) === -1) {
           continue;
         }
         var generatedPosition = section.consumer.generatedPositionFor(aArgs);
@@ -4298,7 +4298,7 @@ var require_source_map_consumer = __commonJS({
         for (var j = 0; j < sectionMappings.length; j++) {
           var mapping = sectionMappings[j];
           var source = section.consumer._sources.at(mapping.source);
-          source = util.computeSourceURL(section.consumer.sourceRoot, source, this._sourceMapURL);
+          source = util2.computeSourceURL(section.consumer.sourceRoot, source, this._sourceMapURL);
           this._sources.add(source);
           source = this._sources.indexOf(source);
           var name = null;
@@ -4321,8 +4321,8 @@ var require_source_map_consumer = __commonJS({
           }
         }
       }
-      quickSort(this.__generatedMappings, util.compareByGeneratedPositionsDeflated);
-      quickSort(this.__originalMappings, util.compareByOriginalPositions);
+      quickSort(this.__generatedMappings, util2.compareByGeneratedPositionsDeflated);
+      quickSort(this.__originalMappings, util2.compareByOriginalPositions);
     };
     exports.IndexedSourceMapConsumer = IndexedSourceMapConsumer;
   }
@@ -4332,7 +4332,7 @@ var require_source_map_consumer = __commonJS({
 var require_source_node = __commonJS({
   "node_modules/source-map/lib/source-node.js"(exports) {
     var SourceMapGenerator = require_source_map_generator().SourceMapGenerator;
-    var util = require_util();
+    var util2 = require_util();
     var REGEX_NEWLINE = /(\r?\n)/;
     var NEWLINE_CODE = 10;
     var isSourceNode = "$$$isSourceNode$$$";
@@ -4398,7 +4398,7 @@ var require_source_node = __commonJS({
         var content = aSourceMapConsumer.sourceContentFor(sourceFile);
         if (content != null) {
           if (aRelativePath != null) {
-            sourceFile = util.join(aRelativePath, sourceFile);
+            sourceFile = util2.join(aRelativePath, sourceFile);
           }
           node.setSourceContent(sourceFile, content);
         }
@@ -4408,7 +4408,7 @@ var require_source_node = __commonJS({
         if (mapping === null || mapping.source === void 0) {
           node.add(code);
         } else {
-          var source = aRelativePath ? util.join(aRelativePath, mapping.source) : mapping.source;
+          var source = aRelativePath ? util2.join(aRelativePath, mapping.source) : mapping.source;
           node.add(new SourceNode(
             mapping.originalLine,
             mapping.originalColumn,
@@ -4494,7 +4494,7 @@ var require_source_node = __commonJS({
       return this;
     };
     SourceNode.prototype.setSourceContent = function SourceNode_setSourceContent(aSourceFile, aSourceContent) {
-      this.sourceContents[util.toSetString(aSourceFile)] = aSourceContent;
+      this.sourceContents[util2.toSetString(aSourceFile)] = aSourceContent;
     };
     SourceNode.prototype.walkSourceContents = function SourceNode_walkSourceContents(aFn) {
       for (var i = 0, len = this.children.length; i < len; i++) {
@@ -4504,7 +4504,7 @@ var require_source_node = __commonJS({
       }
       var sources = Object.keys(this.sourceContents);
       for (var i = 0, len = sources.length; i < len; i++) {
-        aFn(util.fromSetString(sources[i]), this.sourceContents[sources[i]]);
+        aFn(util2.fromSetString(sources[i]), this.sourceContents[sources[i]]);
       }
     };
     SourceNode.prototype.toString = function SourceNode_toString() {
@@ -5816,8 +5816,8 @@ var require_printer = __commonJS({
       return this.accept(sexpr.path) + " " + params + hash;
     };
     PrintVisitor.prototype.PathExpression = function(id) {
-      var path2 = id.parts.join("/");
-      return (id.data ? "@" : "") + "PATH:" + path2;
+      var path3 = id.parts.join("/");
+      return (id.data ? "@" : "") + "PATH:" + path3;
     };
     PrintVisitor.prototype.StringLiteral = function(string) {
       return '"' + string.value + '"';
@@ -5856,8 +5856,8 @@ var require_lib = __commonJS({
     handlebars2.print = printer.print;
     module.exports = handlebars2;
     function extension(module2, filename) {
-      var fs4 = __require("fs");
-      var templateString = fs4.readFileSync(filename, "utf8");
+      var fs8 = __require("fs");
+      var templateString = fs8.readFileSync(filename, "utf8");
       module2.exports = handlebars2.compile(templateString);
     }
     if (typeof __require !== "undefined" && __require.extensions) {
@@ -5869,7 +5869,476 @@ var require_lib = __commonJS({
 
 // enviar.js
 import React2, { useState as useState2, useEffect } from "react";
-import { render as render2, Box as Box2, Text as Text2 } from "ink";
+import { render as render2, Box as Box2, Text as Text2, useInput as useInput2 } from "ink";
+
+// node_modules/open/index.js
+import process6 from "node:process";
+import { Buffer as Buffer2 } from "node:buffer";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import util from "node:util";
+import childProcess from "node:child_process";
+import fs4, { constants as fsConstants } from "node:fs/promises";
+
+// node_modules/is-wsl/index.js
+import process2 from "node:process";
+import os from "node:os";
+import fs3 from "node:fs";
+
+// node_modules/is-inside-container/index.js
+import fs2 from "node:fs";
+
+// node_modules/is-docker/index.js
+import fs from "node:fs";
+var isDockerCached;
+function hasDockerEnv() {
+  try {
+    fs.statSync("/.dockerenv");
+    return true;
+  } catch {
+    return false;
+  }
+}
+function hasDockerCGroup() {
+  try {
+    return fs.readFileSync("/proc/self/cgroup", "utf8").includes("docker");
+  } catch {
+    return false;
+  }
+}
+function isDocker() {
+  if (isDockerCached === void 0) {
+    isDockerCached = hasDockerEnv() || hasDockerCGroup();
+  }
+  return isDockerCached;
+}
+
+// node_modules/is-inside-container/index.js
+var cachedResult;
+var hasContainerEnv = () => {
+  try {
+    fs2.statSync("/run/.containerenv");
+    return true;
+  } catch {
+    return false;
+  }
+};
+function isInsideContainer() {
+  if (cachedResult === void 0) {
+    cachedResult = hasContainerEnv() || isDocker();
+  }
+  return cachedResult;
+}
+
+// node_modules/is-wsl/index.js
+var isWsl = () => {
+  if (process2.platform !== "linux") {
+    return false;
+  }
+  if (os.release().toLowerCase().includes("microsoft")) {
+    if (isInsideContainer()) {
+      return false;
+    }
+    return true;
+  }
+  try {
+    return fs3.readFileSync("/proc/version", "utf8").toLowerCase().includes("microsoft") ? !isInsideContainer() : false;
+  } catch {
+    return false;
+  }
+};
+var is_wsl_default = process2.env.__IS_WSL_TEST__ ? isWsl : isWsl();
+
+// node_modules/define-lazy-prop/index.js
+function defineLazyProperty(object, propertyName, valueGetter) {
+  const define2 = (value) => Object.defineProperty(object, propertyName, { value, enumerable: true, writable: true });
+  Object.defineProperty(object, propertyName, {
+    configurable: true,
+    enumerable: true,
+    get() {
+      const result = valueGetter();
+      define2(result);
+      return result;
+    },
+    set(value) {
+      define2(value);
+    }
+  });
+  return object;
+}
+
+// node_modules/default-browser/index.js
+import { promisify as promisify4 } from "node:util";
+import process5 from "node:process";
+import { execFile as execFile4 } from "node:child_process";
+
+// node_modules/default-browser-id/index.js
+import { promisify } from "node:util";
+import process3 from "node:process";
+import { execFile } from "node:child_process";
+var execFileAsync = promisify(execFile);
+async function defaultBrowserId() {
+  if (process3.platform !== "darwin") {
+    throw new Error("macOS only");
+  }
+  const { stdout } = await execFileAsync("defaults", ["read", "com.apple.LaunchServices/com.apple.launchservices.secure", "LSHandlers"]);
+  const match = /LSHandlerRoleAll = "(?!-)(?<id>[^"]+?)";\s+?LSHandlerURLScheme = (?:http|https);/.exec(stdout);
+  return match?.groups.id ?? "com.apple.Safari";
+}
+
+// node_modules/run-applescript/index.js
+import process4 from "node:process";
+import { promisify as promisify2 } from "node:util";
+import { execFile as execFile2, execFileSync } from "node:child_process";
+var execFileAsync2 = promisify2(execFile2);
+async function runAppleScript(script, { humanReadableOutput = true } = {}) {
+  if (process4.platform !== "darwin") {
+    throw new Error("macOS only");
+  }
+  const outputArguments = humanReadableOutput ? [] : ["-ss"];
+  const { stdout } = await execFileAsync2("osascript", ["-e", script, outputArguments]);
+  return stdout.trim();
+}
+
+// node_modules/bundle-name/index.js
+async function bundleName(bundleId) {
+  return runAppleScript(`tell application "Finder" to set app_path to application file id "${bundleId}" as string
+tell application "System Events" to get value of property list item "CFBundleName" of property list file (app_path & ":Contents:Info.plist")`);
+}
+
+// node_modules/default-browser/windows.js
+import { promisify as promisify3 } from "node:util";
+import { execFile as execFile3 } from "node:child_process";
+var execFileAsync3 = promisify3(execFile3);
+var windowsBrowserProgIds = {
+  AppXq0fevzme2pys62n3e0fbqa7peapykr8v: { name: "Edge", id: "com.microsoft.edge.old" },
+  MSEdgeDHTML: { name: "Edge", id: "com.microsoft.edge" },
+  // On macOS, it's "com.microsoft.edgemac"
+  MSEdgeHTM: { name: "Edge", id: "com.microsoft.edge" },
+  // Newer Edge/Win10 releases
+  "IE.HTTP": { name: "Internet Explorer", id: "com.microsoft.ie" },
+  FirefoxURL: { name: "Firefox", id: "org.mozilla.firefox" },
+  ChromeHTML: { name: "Chrome", id: "com.google.chrome" },
+  BraveHTML: { name: "Brave", id: "com.brave.Browser" },
+  BraveBHTML: { name: "Brave Beta", id: "com.brave.Browser.beta" },
+  BraveSSHTM: { name: "Brave Nightly", id: "com.brave.Browser.nightly" }
+};
+var UnknownBrowserError = class extends Error {
+};
+async function defaultBrowser(_execFileAsync = execFileAsync3) {
+  const { stdout } = await _execFileAsync("reg", [
+    "QUERY",
+    " HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice",
+    "/v",
+    "ProgId"
+  ]);
+  const match = /ProgId\s*REG_SZ\s*(?<id>\S+)/.exec(stdout);
+  if (!match) {
+    throw new UnknownBrowserError(`Cannot find Windows browser in stdout: ${JSON.stringify(stdout)}`);
+  }
+  const { id } = match.groups;
+  const browser = windowsBrowserProgIds[id];
+  if (!browser) {
+    throw new UnknownBrowserError(`Unknown browser ID: ${id}`);
+  }
+  return browser;
+}
+
+// node_modules/default-browser/index.js
+var execFileAsync4 = promisify4(execFile4);
+var titleize = (string) => string.toLowerCase().replaceAll(/(?:^|\s|-)\S/g, (x) => x.toUpperCase());
+async function defaultBrowser2() {
+  if (process5.platform === "darwin") {
+    const id = await defaultBrowserId();
+    const name = await bundleName(id);
+    return { name, id };
+  }
+  if (process5.platform === "linux") {
+    const { stdout } = await execFileAsync4("xdg-mime", ["query", "default", "x-scheme-handler/http"]);
+    const id = stdout.trim();
+    const name = titleize(id.replace(/.desktop$/, "").replace("-", " "));
+    return { name, id };
+  }
+  if (process5.platform === "win32") {
+    return defaultBrowser();
+  }
+  throw new Error("Only macOS, Linux, and Windows are supported");
+}
+
+// node_modules/open/index.js
+var execFile5 = util.promisify(childProcess.execFile);
+var __dirname = path.dirname(fileURLToPath(import.meta.url));
+var localXdgOpenPath = path.join(__dirname, "xdg-open");
+var { platform, arch } = process6;
+var getWslDrivesMountPoint = /* @__PURE__ */ (() => {
+  const defaultMountPoint = "/mnt/";
+  let mountPoint;
+  return async function() {
+    if (mountPoint) {
+      return mountPoint;
+    }
+    const configFilePath = "/etc/wsl.conf";
+    let isConfigFileExists = false;
+    try {
+      await fs4.access(configFilePath, fsConstants.F_OK);
+      isConfigFileExists = true;
+    } catch {
+    }
+    if (!isConfigFileExists) {
+      return defaultMountPoint;
+    }
+    const configContent = await fs4.readFile(configFilePath, { encoding: "utf8" });
+    const configMountPoint = /(?<!#.*)root\s*=\s*(?<mountPoint>.*)/g.exec(configContent);
+    if (!configMountPoint) {
+      return defaultMountPoint;
+    }
+    mountPoint = configMountPoint.groups.mountPoint.trim();
+    mountPoint = mountPoint.endsWith("/") ? mountPoint : `${mountPoint}/`;
+    return mountPoint;
+  };
+})();
+var getPowershellPathFromWsl = async () => {
+  const mountPoint = await getWslDrivesMountPoint();
+  return `${mountPoint}c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe`;
+};
+async function getWindowsDefaultBrowserFromWsl() {
+  const powershellPath = await getPowershellPathFromWsl();
+  const rawCommand = '(Get-ItemProperty -Path "HKCU:\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice").ProgId';
+  const encodedCommand = Buffer2.from(rawCommand, "utf16le").toString("base64");
+  const { stdout } = await execFile5(
+    powershellPath,
+    [
+      "-NoProfile",
+      "-NonInteractive",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-EncodedCommand",
+      encodedCommand
+    ],
+    { encoding: "utf8" }
+  );
+  const progId = stdout.trim();
+  const browserMap = {
+    ChromeHTML: "com.google.chrome",
+    MSEdgeHTM: "com.microsoft.edge",
+    FirefoxURL: "org.mozilla.firefox"
+  };
+  return browserMap[progId] ? { id: browserMap[progId] } : {};
+}
+var pTryEach = async (array, mapper) => {
+  let latestError;
+  for (const item of array) {
+    try {
+      return await mapper(item);
+    } catch (error) {
+      latestError = error;
+    }
+  }
+  throw latestError;
+};
+var baseOpen = async (options) => {
+  options = {
+    wait: false,
+    background: false,
+    newInstance: false,
+    allowNonzeroExitCode: false,
+    ...options
+  };
+  if (Array.isArray(options.app)) {
+    return pTryEach(options.app, (singleApp) => baseOpen({
+      ...options,
+      app: singleApp
+    }));
+  }
+  let { name: app, arguments: appArguments = [] } = options.app ?? {};
+  appArguments = [...appArguments];
+  if (Array.isArray(app)) {
+    return pTryEach(app, (appName) => baseOpen({
+      ...options,
+      app: {
+        name: appName,
+        arguments: appArguments
+      }
+    }));
+  }
+  if (app === "browser" || app === "browserPrivate") {
+    const ids = {
+      "com.google.chrome": "chrome",
+      "google-chrome.desktop": "chrome",
+      "org.mozilla.firefox": "firefox",
+      "firefox.desktop": "firefox",
+      "com.microsoft.msedge": "edge",
+      "com.microsoft.edge": "edge",
+      "com.microsoft.edgemac": "edge",
+      "microsoft-edge.desktop": "edge"
+    };
+    const flags = {
+      chrome: "--incognito",
+      firefox: "--private-window",
+      edge: "--inPrivate"
+    };
+    const browser = is_wsl_default ? await getWindowsDefaultBrowserFromWsl() : await defaultBrowser2();
+    if (browser.id in ids) {
+      const browserName = ids[browser.id];
+      if (app === "browserPrivate") {
+        appArguments.push(flags[browserName]);
+      }
+      return baseOpen({
+        ...options,
+        app: {
+          name: apps[browserName],
+          arguments: appArguments
+        }
+      });
+    }
+    throw new Error(`${browser.name} is not supported as a default browser`);
+  }
+  let command;
+  const cliArguments = [];
+  const childProcessOptions = {};
+  if (platform === "darwin") {
+    command = "open";
+    if (options.wait) {
+      cliArguments.push("--wait-apps");
+    }
+    if (options.background) {
+      cliArguments.push("--background");
+    }
+    if (options.newInstance) {
+      cliArguments.push("--new");
+    }
+    if (app) {
+      cliArguments.push("-a", app);
+    }
+  } else if (platform === "win32" || is_wsl_default && !isInsideContainer() && !app) {
+    command = is_wsl_default ? await getPowershellPathFromWsl() : `${process6.env.SYSTEMROOT || process6.env.windir || "C:\\Windows"}\\System32\\WindowsPowerShell\\v1.0\\powershell`;
+    cliArguments.push(
+      "-NoProfile",
+      "-NonInteractive",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-EncodedCommand"
+    );
+    if (!is_wsl_default) {
+      childProcessOptions.windowsVerbatimArguments = true;
+    }
+    const encodedArguments = ["Start"];
+    if (options.wait) {
+      encodedArguments.push("-Wait");
+    }
+    if (app) {
+      encodedArguments.push(`"\`"${app}\`""`);
+      if (options.target) {
+        appArguments.push(options.target);
+      }
+    } else if (options.target) {
+      encodedArguments.push(`"${options.target}"`);
+    }
+    if (appArguments.length > 0) {
+      appArguments = appArguments.map((argument) => `"\`"${argument}\`""`);
+      encodedArguments.push("-ArgumentList", appArguments.join(","));
+    }
+    options.target = Buffer2.from(encodedArguments.join(" "), "utf16le").toString("base64");
+  } else {
+    if (app) {
+      command = app;
+    } else {
+      const isBundled = !__dirname || __dirname === "/";
+      let exeLocalXdgOpen = false;
+      try {
+        await fs4.access(localXdgOpenPath, fsConstants.X_OK);
+        exeLocalXdgOpen = true;
+      } catch {
+      }
+      const useSystemXdgOpen = process6.versions.electron ?? (platform === "android" || isBundled || !exeLocalXdgOpen);
+      command = useSystemXdgOpen ? "xdg-open" : localXdgOpenPath;
+    }
+    if (appArguments.length > 0) {
+      cliArguments.push(...appArguments);
+    }
+    if (!options.wait) {
+      childProcessOptions.stdio = "ignore";
+      childProcessOptions.detached = true;
+    }
+  }
+  if (platform === "darwin" && appArguments.length > 0) {
+    cliArguments.push("--args", ...appArguments);
+  }
+  if (options.target) {
+    cliArguments.push(options.target);
+  }
+  const subprocess = childProcess.spawn(command, cliArguments, childProcessOptions);
+  if (options.wait) {
+    return new Promise((resolve, reject) => {
+      subprocess.once("error", reject);
+      subprocess.once("close", (exitCode) => {
+        if (!options.allowNonzeroExitCode && exitCode > 0) {
+          reject(new Error(`Exited with code ${exitCode}`));
+          return;
+        }
+        resolve(subprocess);
+      });
+    });
+  }
+  subprocess.unref();
+  return subprocess;
+};
+var open = (target, options) => {
+  if (typeof target !== "string") {
+    throw new TypeError("Expected a `target`");
+  }
+  return baseOpen({
+    ...options,
+    target
+  });
+};
+function detectArchBinary(binary) {
+  if (typeof binary === "string" || Array.isArray(binary)) {
+    return binary;
+  }
+  const { [arch]: archBinary } = binary;
+  if (!archBinary) {
+    throw new Error(`${arch} is not supported`);
+  }
+  return archBinary;
+}
+function detectPlatformBinary({ [platform]: platformBinary }, { wsl }) {
+  if (wsl && is_wsl_default) {
+    return detectArchBinary(wsl);
+  }
+  if (!platformBinary) {
+    throw new Error(`${platform} is not supported`);
+  }
+  return detectArchBinary(platformBinary);
+}
+var apps = {};
+defineLazyProperty(apps, "chrome", () => detectPlatformBinary({
+  darwin: "google chrome",
+  win32: "chrome",
+  linux: ["google-chrome", "google-chrome-stable", "chromium"]
+}, {
+  wsl: {
+    ia32: "/mnt/c/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+    x64: ["/mnt/c/Program Files/Google/Chrome/Application/chrome.exe", "/mnt/c/Program Files (x86)/Google/Chrome/Application/chrome.exe"]
+  }
+}));
+defineLazyProperty(apps, "firefox", () => detectPlatformBinary({
+  darwin: "firefox",
+  win32: "C:\\Program Files\\Mozilla Firefox\\firefox.exe",
+  linux: "firefox"
+}, {
+  wsl: "/mnt/c/Program Files/Mozilla Firefox/firefox.exe"
+}));
+defineLazyProperty(apps, "edge", () => detectPlatformBinary({
+  darwin: "microsoft edge",
+  win32: "msedge",
+  linux: ["microsoft-edge", "microsoft-edge-dev"]
+}, {
+  wsl: "/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+}));
+defineLazyProperty(apps, "browser", () => "browser");
+defineLazyProperty(apps, "browserPrivate", () => "browserPrivate");
+var open_default = open;
 
 // services/EmailSender.js
 import nodemailer from "nodemailer";
@@ -5887,6 +6356,10 @@ var EmailSender = class {
     });
   }
   async send(to, html, currentIndex, total) {
+    if (!to) {
+      console.error(`\u274C Erro: destinat\xE1rio n\xE3o definido para o e-mail ${currentIndex}/${total}.`);
+      return;
+    }
     try {
       const mailOptions = {
         from: process.env.USER_SMTP,
@@ -5895,6 +6368,7 @@ var EmailSender = class {
         subject: "Sem Assunto",
         html
       };
+      console.log(`\u{1F4E4} Enviando e-mail para ${to} (${currentIndex}/${total})...`);
       await this.transporter.sendMail(mailOptions);
       console.log(`\u2705 [${currentIndex}/${total}] Email enviado para ${to}`);
       if (process.env.LIMITE_POR_MINUTO) {
@@ -5911,17 +6385,23 @@ var EmailSender = class {
 };
 
 // services/CSVReader.js
-import fs from "fs";
+import fs5 from "fs";
 import csv from "csv-parser";
 var CSVReader = class {
   read(filePath) {
     return new Promise((resolve, reject) => {
       const contatos = [];
-      fs.createReadStream(filePath).pipe(csv()).on("data", (data) => contatos.push(data)).on("end", () => {
-        if (contatos.length === 0) {
-          console.log("\u2705 Arquivo CSV processado, mas nenhum dado foi encontrado.");
-          resolve(contatos);
+      fs5.createReadStream(filePath).pipe(csv()).on("data", (data) => {
+        if (data.email && data.email.trim() !== "") {
+          contatos.push(data);
         } else {
+          console.log(`\u26A0\uFE0F Ignorando contato sem email: ${JSON.stringify(data)}`);
+        }
+      }).on("end", () => {
+        if (contatos.length === 0) {
+          reject(new Error("Nenhum contato v\xE1lido encontrado no CSV"));
+        } else {
+          console.log(`\u2705 ${contatos.length} contatos v\xE1lidos encontrados`);
           resolve(contatos);
         }
       }).on("error", (err) => reject(err));
@@ -5931,12 +6411,12 @@ var CSVReader = class {
 
 // services/TemplateRenderer.js
 var import_handlebars = __toESM(require_lib(), 1);
-import fs2 from "fs";
-import path from "path";
+import fs6 from "fs";
+import path2 from "path";
 var TemplateRenderer = class {
   constructor(templateFileName) {
-    const templatePath = path.resolve(templateFileName);
-    this.templateHTML = fs2.readFileSync(templatePath, "utf8");
+    const templatePath = path2.resolve(templateFileName);
+    this.templateHTML = fs6.readFileSync(templatePath, "utf8");
     this.template = import_handlebars.default.compile(this.templateHTML);
   }
   render(data) {
@@ -5947,12 +6427,12 @@ var TemplateRenderer = class {
 // steps/getCSVPath.js
 import React, { useState } from "react";
 import { render, Box, Text, useInput } from "ink";
-import fs3 from "fs";
+import fs7 from "fs";
 var CSVInput = ({ onSubmit }) => {
   const [input, setInput] = useState("");
   const [error, setError] = useState(null);
-  const sanitizePath = (path2) => {
-    return path2.replace(/^["'](.+)["']$/, "$1").trim();
+  const sanitizePath = (path3) => {
+    return path3.replace(/^["'](.+)["']$/, "$1").trim();
   };
   useInput((inputChar, key) => {
     if (key.return) {
@@ -5961,7 +6441,7 @@ var CSVInput = ({ onSubmit }) => {
         setError("O caminho do arquivo CSV \xE9 obrigat\xF3rio.");
         return;
       }
-      if (!fs3.existsSync(sanitizedInput)) {
+      if (!fs7.existsSync(sanitizedInput)) {
         setError("\u274C O arquivo CSV fornecido n\xE3o foi encontrado.");
         return;
       }
@@ -5983,28 +6463,53 @@ var App = () => {
   const [contatos, setContatos] = useState2([]);
   const [progress, setProgress] = useState2(0);
   const [error, setError] = useState2(null);
+  const previewTemplate = async () => {
+    try {
+      await open_default("./template.html");
+    } catch (err) {
+      console.error("Erro ao abrir o template:", err.message);
+    }
+  };
+  useInput2((input) => {
+    if (step === "confirm") {
+      if (input === "v" || input === "V") {
+        previewTemplate();
+      } else if (input === "y" || input === "Y") {
+        setStep("processing");
+      } else if (input === "n" || input === "N") {
+        setCsvPath(null);
+        setStep("input");
+      }
+    }
+  });
   useEffect(() => {
     const processCSV = async () => {
       try {
         const csvReader = new CSVReader();
-        const contatos2 = await csvReader.read(csvPath);
-        setContatos(contatos2);
+        const contacts = await csvReader.read(csvPath);
+        setContatos(contacts);
         setStep("sending");
         const templateRenderer = new TemplateRenderer("./template.html");
         const emailSender = new EmailSender();
-        for (const [i, contato] of contatos2.entries()) {
+        for (const [i, contato] of contacts.entries()) {
           try {
             const html = templateRenderer.render(contato);
-            await emailSender.send(contato.email, html, i + 1, contatos2.length);
-            setProgress((i + 1) / contatos2.length * 100);
+            await emailSender.send(contato.email, html, i + 1, contacts.length);
+            setProgress((i + 1) / contacts.length * 100);
           } catch (err) {
-            console.error(`\u274C Erro ao enviar para ${contato.email}: ${err.message}`);
+            console.error(
+              `\u274C Erro ao enviar para ${contato.email}: ${err.message}`
+            );
           }
         }
         setStep("done");
       } catch (err) {
-        setError(err.message);
-        setStep("error");
+        if (err.message === "No recipients defined") {
+          console.error("N\xE3o ha mais destinat\xE1rios definidos.");
+        } else {
+          setError(err.message);
+          setStep("error");
+        }
       }
     };
     if (step === "processing") {
@@ -6012,18 +6517,21 @@ var App = () => {
     }
   }, [step, csvPath]);
   if (step === "input") {
-    return /* @__PURE__ */ React2.createElement(
+    return /* @__PURE__ */ React2.createElement(Box2, null, /* @__PURE__ */ React2.createElement(
       CSVInput,
       {
-        onSubmit: (path2) => {
-          setCsvPath(path2);
-          setStep("processing");
+        onSubmit: (path3) => {
+          setCsvPath(path3);
+          setStep("confirm");
         }
       }
-    );
+    ));
+  }
+  if (step === "confirm") {
+    return /* @__PURE__ */ React2.createElement(Box2, { flexDirection: "column" }, /* @__PURE__ */ React2.createElement(Text2, null, "\u{1F4C2} Arquivo carregado: ", csvPath), /* @__PURE__ */ React2.createElement(Text2, null, "\u{1F440} Deseja visualizar o template antes de enviar?"), /* @__PURE__ */ React2.createElement(Text2, null, "[V] Visualizar [Y] Enviar [N] Cancelar"));
   }
   if (step === "processing") {
-    return /* @__PURE__ */ React2.createElement(Box2, null, /* @__PURE__ */ React2.createElement(Text2, null, "\u{1F4C2} Processando o arquivo CSV..."));
+    return /* @__PURE__ */ React2.createElement(Box2, null, /* @__PURE__ */ React2.createElement(Text2, null, "\u{1F4C2} Lendo CSV e preparando envios..."));
   }
   if (step === "sending") {
     return /* @__PURE__ */ React2.createElement(Box2, null, /* @__PURE__ */ React2.createElement(Text2, null, "\u{1F4E4} Enviando e-mails... Progresso: ", progress.toFixed(2), "%"));
