@@ -11,20 +11,20 @@ import { CSVInput } from "./steps/getCSVPath.js";
 const App = () => {
   const [step, setStep] = useState("input");
   const [csvPath, setCsvPath] = useState(null);
-  const [contatos, setContatos] = useState([]);
+  const [contacts, setContacts] = useState([]);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState(null);
 
-  // Função para abrir o template HTML
+  // Function to open the HTML template
   const previewTemplate = async () => {
     try {
       await open("./template.html");
     } catch (err) {
-      console.error("Erro ao abrir o template:", err.message);
+      console.error("Error opening the template:", err.message);
     }
   };
 
-  // Captura de teclas no passo de confirmação
+  // Key capture on the confirmation step
   useInput((input) => {
     if (step === "confirm") {
       if (input === "v" || input === "V") {
@@ -38,34 +38,32 @@ const App = () => {
     }
   });
 
-  // Processamento e envio após confirmação
+  // Processing and sending after confirmation
   useEffect(() => {
     const processCSV = async () => {
       try {
         const csvReader = new CSVReader();
         const contacts = await csvReader.read(csvPath);
-        setContatos(contacts);
+        setContacts(contacts);
         setStep("sending");
 
         const templateRenderer = new TemplateRenderer("./template.html");
         const emailSender = new EmailSender();
 
-        for (const [i, contato] of contacts.entries()) {
+        for (const [i, contact] of contacts.entries()) {
           try {
-            const html = templateRenderer.render(contato);
-            await emailSender.send(contato.email, html, i + 1, contacts.length);
+            const html = templateRenderer.render(contact);
+            await emailSender.send(contact.email, html, i + 1, contacts.length);
             setProgress(((i + 1) / contacts.length) * 100);
           } catch (err) {
-            console.error(
-              `❌ Erro ao enviar para ${contato.email}: ${err.message}`
-            );
+            console.error(`❌ Failed to send to ${contact.email}: ${err.message}`);
           }
         }
 
         setStep("done");
       } catch (err) {
         if (err.message === "No recipients defined") {
-          console.error("Não ha mais destinatários definidos.");
+          console.error("No recipients defined.");
         } else {
           setError(err.message);
           setStep("error");
@@ -78,7 +76,7 @@ const App = () => {
     }
   }, [step, csvPath]);
 
-  // Renderização de acordo com o passo
+  // Step-based rendering
   if (step === "input") {
     return (
       <Box>
@@ -95,9 +93,9 @@ const App = () => {
   if (step === "confirm") {
     return (
       <Box flexDirection="column">
-        <Text>📂 Arquivo carregado: {csvPath}</Text>
-        <Text>👀 Deseja visualizar o template antes de enviar?</Text>
-        <Text>[V] Visualizar [Y] Enviar [N] Cancelar</Text>
+        <Text>📂 File loaded: {csvPath}</Text>
+        <Text>👀 Do you want to preview the template before sending?</Text>
+        <Text>[V] View   [Y] Send   [N] Cancel</Text>
       </Box>
     );
   }
@@ -105,7 +103,7 @@ const App = () => {
   if (step === "processing") {
     return (
       <Box>
-        <Text>📂 Lendo CSV e preparando envios...</Text>
+        <Text>📂 Reading CSV and preparing sends...</Text>
       </Box>
     );
   }
@@ -113,7 +111,7 @@ const App = () => {
   if (step === "sending") {
     return (
       <Box>
-        <Text>Processando envios...</Text>
+        <Text>Sending emails...</Text>
       </Box>
     );
   }
@@ -121,7 +119,7 @@ const App = () => {
   if (step === "done") {
     return (
       <Box>
-        <Text>✅ Todos os e-mails foram enviados com sucesso!</Text>
+        <Text>✅ All emails were sent successfully!</Text>
       </Box>
     );
   }
@@ -129,7 +127,7 @@ const App = () => {
   if (step === "error") {
     return (
       <Box>
-        <Text color="red">❌ Erro: {error}</Text>
+        <Text color="red">❌ Error: {error}</Text>
       </Box>
     );
   }

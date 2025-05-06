@@ -1,67 +1,62 @@
 import fs from "fs";
 import csv from "csv-parser";
 import chalk from "chalk";
-import cliSpinners from 'cli-spinners';
+import cliSpinners from "cli-spinners";
 
 export class CSVReader {
-  constructor() {
-    this.spinner = cliSpinners.dots;
-    this.interval = null;
-  }
+  #spinnerInterval = null;
+  #spinner = cliSpinners.dots;
 
-  startSpinner() {
+  #startSpinner() {
     let frame = 0;
-    process.stdout.write('\r');
-    this.interval = setInterval(() => {
-      const spinnerFrame = this.spinner.frames[frame];
-      process.stdout.write('\r' + ' '.repeat(100)); // Limpa a linha
-      process.stdout.write('\r' + chalk.cyan(spinnerFrame) + ' Processando CSV...');
-      frame = ++frame % this.spinner.frames.length;
-    }, this.spinner.interval);
+    this.#spinnerInterval = setInterval(() => {
+      const icon = this.#spinner.frames[frame];
+      process.stdout.write(`\r${' '.repeat(100)}\r${chalk.cyan(icon)} Processing CSV...`);
+      frame = (frame + 1) % this.#spinner.frames.length;
+    }, this.#spinner.interval);
   }
 
-  stopSpinner() {
-    if (this.interval) {
-      clearInterval(this.interval);
-      this.interval = null;
-      process.stdout.write('\r' + ' '.repeat(100) + '\r'); // Limpa a linha
-    }
+  #stopSpinner() {
+    clearInterval(this.#spinnerInterval);
+    this.#spinnerInterval = null;
+    process.stdout.write(`\r${' '.repeat(100)}\r`);
   }
 
   read(filePath) {
     return new Promise((resolve, reject) => {
-      const contatos = [];
+      const contacts = [];
       let invalidCount = 0;
 
-      this.startSpinner();
+      this.#startSpinner();
 
       fs.createReadStream(filePath)
         .pipe(csv())
         .on("data", (data) => {
-          if (data.email && data.email.trim() !== "") {
-            contatos.push(data);
+          if (data.email?.trim()) {
+            contacts.push(data);
           } else {
             invalidCount++;
           }
         })
         .on("end", () => {
-          this.stopSpinner();
-          if (contatos.length === 0) {
-            console.log(chalk.red('✗ Nenhum contato válido encontrado no CSV'));
-            reject(new Error("Nenhum contato válido encontrado no CSV"));
-          } else {
-            console.log(chalk.blue('📊 Resumo da importação:'));
-            console.log(chalk.green('✓') + ` ${contatos.length} contatos válidos`);
-            if (invalidCount > 0) {
-              console.log(chalk.yellow('!') + ` ${invalidCount} contatos ignorados`);
-            }
-            console.log(); // Linha em branco para separação
-            resolve(contatos);
+          this.#stopSpinner();
+
+          if (!contacts.length) {
+            console.log(chalk.red("✗ No valid contacts found in the CSV file"));
+            return reject(new Error("No valid contacts found in the CSV file"));
           }
+
+          console.log(chalk.blue("📊 Import summary:"));
+          console.log(`${chalk.green("✓")} ${contacts.length} valid contacts`);
+          if (invalidCount) {
+            console.log(`${chalk.yellow("!")} ${invalidCount} contacts ignored`);
+          }
+          console.log(); // Extra spacing
+          resolve(contacts);
         })
         .on("error", (err) => {
-          this.stopSpinner();
-          console.log(chalk.red('✗ Erro ao ler o arquivo: ') + err.message);
+          this.#stopSpinner();
+          console.log(chalk.red("✗ Error reading file: ") + err.message);
           reject(err);
         });
     });
